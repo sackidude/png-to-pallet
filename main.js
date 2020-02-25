@@ -2,6 +2,7 @@ const fs = require("fs");
 const PNG = require('png-js')
 
 const data = {}
+const shouldWrite = true; // This is for debugging
 
 let asyncPrompt = (_question) => {
     return new Promise((resolve, reject) => {
@@ -34,15 +35,14 @@ asyncPrompt("Name: ").then(answer => {
     return asyncPrompt("File(in current directory): ");
 }).then((file => {
     PNG.decode(`./${file}`, function (pixels) {
-        console.log(pixels.length)
         let colors = []
         let color = [0, 0, 0]
         for (let i = 0; i < pixels.length; i++) {
-            if (i % 3 === 0) {
+            if (i % 4 === 0) {
                 color[0] = pixels[i]
-            } else if (i % 3 === 1) {
+            } else if (i % 4 === 1) {
                 color[1] = pixels[i]
-            } else if (i % 3 === 2) {
+            } else if (i % 4 === 2) {
                 color[2] = pixels[i]
                 if (colors.length === 0) {
                     colors.push(color);
@@ -60,6 +60,7 @@ asyncPrompt("Name: ").then(answer => {
                 }
                 color = [0, 0, 0];
             }
+            // it has alpha but i am not using it
         }
         objArr = []
         for (let i = 0; i < colors.length; i++) {
@@ -70,13 +71,21 @@ asyncPrompt("Name: ").then(answer => {
             })
         }
         data.colors = objArr;
-        fs.writeFile(`./${data.name}.json`, JSON.stringify(data), function (err) {
-            if (err) {
-                return console.log(err);
-            }
-            console.log("The file was saved!");
-        });
+        if (shouldWrite) {
+            fs.writeFile(`./${data.name}.json`, JSON.stringify(data), function (err) {
+                if (err) {
+                    return console.log(err);
+                }
+                console.log("The file was saved!");
+                process.exit();
+            });
+        } else {
+            console.log("Nothing saved!(change the constant shouldWrite in the top of the file)");
+            process.exit();
+        }
+
     });
+
 
 }));
 
